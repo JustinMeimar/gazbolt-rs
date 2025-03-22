@@ -1,0 +1,21 @@
+[compiler]
+name = "clang"
+version = "0.1"
+icon = "dragon"
+
+[steps]
+[steps.compile]
+cmd = "clang"
+flags = ["-Wall"]
+output_file = "prog.exe"
+hidden = true
+
+[steps.run]
+cmd = "prog.exe"
+use_stdin = true
+
+[temp_files]
+directory = "/tmp/gazbolt"
+prefix = "clang_"
+cleanup = true
+

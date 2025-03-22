@@ -1,0 +1,24 @@
+[info]
+name = "gcc"
+version = "0.10"
+icon = "none"
+
+[[steps]]
+cmd = "gcc"
+flags = [""]
+output_file = "prog.exe"
+hidden = true
+use_stdin = false
+
+[[steps]]
+cmd = "prog.exe"
+flags = []
+output_file = ""
+hidden = false
+use_stdin = true
+
+[temp_files]
+dir = "/tmp/gazbolt"
+prefix = "gcc_"
+cleanup = true
+

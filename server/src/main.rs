@@ -1,3 +1,4 @@
+pub mod config;
 use axum::{
     routing::{get, post},
     http::{StatusCode, Method},
@@ -9,6 +10,8 @@ use serde::{Serialize, Deserialize};
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use tower_http::cors::{CorsLayer, Any};
+use config::CompilerConfig;
+
 
 struct AppState {
     counter: Mutex<i32>,
