@@ -74,6 +74,8 @@ fn TextEditor(props: &TextEditorProps) -> Html {
         Callback::from(move |e: Event| {
             let input = e.target_dyn_into::<web_sys::HtmlTextAreaElement>();
             if let Some(input) = input {
+                console::log_1(&input.value().into());
+                eprintln!("ERROR? Testing");
                 app_state.dispatch(
                     AppAction::UpdateCode(
                         input.value().into()
@@ -162,6 +164,7 @@ fn App() -> Html {
 }
 
 fn main() {
+    println!("This is main...");
     yew::Renderer::<App>::new().render();
 }
 
