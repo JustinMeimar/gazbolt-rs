@@ -1,35 +1,56 @@
 pub mod config;
+pub mod api;
+
+// use api::*;
+use std::path::PathBuf;
+use std::sync::Arc;
+use tower_http::cors::{CorsLayer, Any};
+use core::CompilerJob;
+use serde::{Serialize, Deserialize};
+use config::{CompilerConfig, read_configs};
+use clap::Parser;
 use axum::{
     routing::{get, post},
     http::{StatusCode, Method},
-    Json, Router,
-    extract::State,
+    extract::{State, Path},
+    Router,
 };
-use core::CompilerJob;
-use serde::{Serialize, Deserialize};
-use std::sync::Arc;
-use tokio::sync::Mutex;
-use tower_http::cors::{CorsLayer, Any};
-use config::CompilerConfig;
 
+#[derive(Parser)]
+#[command(author, version, about)]
+struct Args {
+    #[arg(long)]
+    config_dir: PathBuf,
+    #[arg(long, default_value="3000")]
+    port: String
+}
 
 struct AppState {
-    counter: Mutex<i32>,
+    configs: Vec<CompilerConfig>,
 }
 
 #[tokio::main]
 async fn main() {
-    let state = Arc::new(AppState {
-        counter: Mutex::new(0),
-    });
+    
+    let args = Args::parse();
+
+    // read the compiler configs into memory
+    let configs = read_configs(args.config_dir);
+    if let Err(e) = &configs {
+        eprintln!("Gazbolt Server Error: {}", e);
+        std::process::exit(1);
+    }
+
+    let state = Arc::new(AppState { configs: configs.unwrap() });
 
     let cors = CorsLayer::new()
         .allow_methods([Method::GET, Method::POST])
         .allow_origin(Any);
 
     let app = Router::new()
-        .route("/api/hello", get(hello_handler))
-        .route("/api/counter", get(get_counter).post(increment_counter))
+        .route("/api/compilers", get(api::get_compilers_handler))
+        .route("/api/programs/{compiler}", get(api::get_programs_handler))
+        .route("/api/run", post(api::run_compiler_handler))
         .with_state(state)
         .layer(cors);
 
@@ -39,26 +60,5 @@ async fn main() {
         .serve(app.into_make_service())
         .await
         .unwrap();
-}
-
-async fn hello_handler() -> Json<serde_json::Value> {
-    Json(serde_json::json!({ "message": "Hello from Rust backend!" }))
-}
-
-async fn get_counter(
-    State(state): State<Arc<AppState>>
-) -> Json<serde_json::Value> {
-    let counter = *state.counter.lock().await;
-    println!("Counter requested: {}", counter);
-    Json(serde_json::json!({ "counter": counter }))
-}
-
-async fn increment_counter(
-    State(state): State<Arc<AppState>>
-) -> Json<serde_json::Value> {
-    let mut counter = state.counter.lock().await;
-    *counter += 1;
-    println!("Counter incremented to: {}", *counter);
-    Json(serde_json::json!({ "counter": *counter }))
 }
 

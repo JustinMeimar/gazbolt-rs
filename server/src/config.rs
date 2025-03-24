@@ -1,9 +1,11 @@
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
+use std::io;
+use std::fs;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CompilerConfig {
-    info: CompilerInfo,
+    pub info: CompilerInfo,
     steps: Vec<Step>,
     #[serde(default)]
     temp_files: TempFilesConfig,
@@ -32,6 +34,46 @@ pub struct TempFilesConfig {
     cleanup: bool
 }
 
+pub fn read_configs(config_dir: PathBuf) -> io::Result<Vec<CompilerConfig>> {
+
+    if !config_dir.exists() {
+        let err_ty = io::ErrorKind::NotFound;
+        return Err(io::Error::new(err_ty, "Config dir not found.")); 
+    }
+    if !config_dir.is_dir() {
+        let err_ty = io::ErrorKind::NotADirectory;
+        return Err(io::Error::new(err_ty, "Path is not a directory.")); 
+    }
+    
+    // For each file in the config directory, attempt to parse the contents as a TOML
+    // file, into a compiler configuration.
+    let configs: Vec<CompilerConfig> = fs::read_dir(&config_dir)?
+        .filter_map(Result::ok) 
+        .filter_map(|entry: fs::DirEntry| {
+            match fs::read_to_string(entry.path()) {
+                Ok(content) => {
+                    match toml::from_str::<CompilerConfig>(&content) {
+                        Ok(config) => Some(config),
+                        Err(e) => {
+                            eprintln!("Error parsing config file {:?}: {}", entry.path(), e);
+                            None
+                        }
+                    }
+                },
+                Err(e) => {
+                    eprintln!("Error reading file {:?}: {}", entry.path(), e);
+                    None
+                }
+            }
+        })
+        .collect();
+    
+    if configs.is_empty() {
+        return Err(io::Error::new(io::ErrorKind::NotFound, "No valid config files found."));
+    }
+  
+    Ok(configs)
+}
 
 #[cfg(test)]
 mod tests {
@@ -63,3 +105,4 @@ mod tests {
         assert_eq!(deserialized.info.name, config.info.name);
     }
 }
+

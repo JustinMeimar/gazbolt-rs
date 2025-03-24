@@ -1,24 +1,23 @@
 [info]
 name = "gcc"
-version = "0.10"
-icon = "none"
+version = "11.3.0"
+icon = "/path/to/gcc-icon.png"
 
 [[steps]]
 cmd = "gcc"
-flags = [""]
-output_file = "prog.exe"
-hidden = true
+flags = ["-Wall", "-Werror", "-O2"]
+output_file = "a.out"
+hidden = false
 use_stdin = false
 
 [[steps]]
-cmd = "prog.exe"
+cmd = "./a.out"
 flags = []
 output_file = ""
 hidden = false
 use_stdin = true
 
 [temp_files]
-dir = "/tmp/gazbolt"
-prefix = "gcc_"
+dir = "/tmp/gcc-compile"
+prefix = "gcc_tmp_"
 cleanup = true
-
