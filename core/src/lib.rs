@@ -1,5 +1,6 @@
 
 pub struct CompilerJob {
-    compiler: String, 
+    compiler: String,
+    program: String,
 }
 

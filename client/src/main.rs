@@ -2,7 +2,9 @@ pub mod state;
 pub mod compiler;
 use state::{AppAction, AppState};
 use compiler::Compiler;
+use wasm_bindgen_futures::spawn_local;
 use yew::prelude::*;
+use gloo_net::http::Request;
 use web_sys::console;
 use serde::{Serialize, Deserialize};
 use std::fmt;
@@ -68,25 +70,53 @@ pub struct TextEditorProps {
 #[function_component]
 fn TextEditor(props: &TextEditorProps) -> Html {
     let app_state = use_context::<UseReducerHandle<AppState>>()
-        .expect("No State found"); 
-    
+        .expect("No State found");  
+    let code = &app_state.code;
+
     let on_code_change = {
+        let app_state = app_state.clone(); // copy to move into closure
+         
         Callback::from(move |e: Event| {
             let input = e.target_dyn_into::<web_sys::HtmlTextAreaElement>();
             if let Some(input) = input {
-                console::log_1(&input.value().into());
-                eprintln!("ERROR? Testing");
-                app_state.dispatch(
-                    AppAction::UpdateCode(
-                        input.value().into()
-                    )
-                );
+                app_state.dispatch(AppAction::UpdateCode(input.value().into()));
             }
         })
     };
+   
+    let on_click = {
+        Callback::from(move |_| { 
+            spawn_local(async move {
+                match Request::get("http://127.0.0.1:3000/api/compilers")
+                    .send()
+                    .await
+                {
+                    Ok(response) => {
+                        match response.status() {
+                            200 => {
+                                console::log_1(&"GET received 200".into());
+                                match response.json::<serde_json::Value>().await {
+                                    Ok(compilers) => {
+                                        console::log_1(&compilers.to_string().into());
+                                    },
+                                    Err(e) => {
+                                        console::log_1(&"Failed to deserialize!".into());
+                                    }
+                                }
+                            },
+                            404 => {
+                                console::log_1(&"GET received 404".into());
+                            },
+                            _ => {
+                                console::log_1(&format!("GET received: {}", response.status()).into());
+                            }
+                        }
+                    },
+                    Err(e) => {},
+                }
 
-    let on_code_run = {
-        Callback::from(move |e: Event| {
+            });
+            console::log_1(&"me".into());
         })
     };
 
@@ -98,10 +128,10 @@ fn TextEditor(props: &TextEditorProps) -> Html {
                 width={"300"} 
                 height={"500"} 
                 rows={"24"}
-                value={props.value.clone()}
+                value={code.clone()}
                 onchange={on_code_change}
             />
-            <button onchange={on_code_run}>
+            <button onclick={on_click}>
                 {"Run"}
             </button>
         </div>

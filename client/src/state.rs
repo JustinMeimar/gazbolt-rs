@@ -1,6 +1,7 @@
 use crate::compiler::Compiler;
 use std::rc::Rc;
 use yew::Reducible;
+use web_sys::console;
 
 #[derive(PartialEq, Clone)]
 pub struct AppState {

@@ -17,11 +17,9 @@ pub struct RunResponse {
     exit_code: u8,
 }
 
-/// @desc: retrieve a vector of compilers .
+/// @desc: retrieve a vector of compilers.
 /// @http: GET
-/// ```
-/// https://service/api/compilers
-/// ```
+/// @route: `https://service/api/compilers`
 pub async fn get_compilers_handler(State(state): State<Arc<AppState>>)
     -> Json<serde_json::Value>
 {
