@@ -1,11 +1,10 @@
 pub mod config;
 pub mod api;
-
-// use api::*;
 use std::path::PathBuf;
 use std::sync::Arc;
 use tower_http::cors::{CorsLayer, Any};
 use core::CompilerJob;
+use api::*;
 use serde::{Serialize, Deserialize};
 use config::{CompilerConfig, read_configs};
 use clap::Parser;
@@ -25,7 +24,8 @@ struct Args {
     port: String
 }
 
-struct AppState {
+//
+pub struct AppState {
     configs: Vec<CompilerConfig>,
 }
 
@@ -48,9 +48,10 @@ async fn main() {
         .allow_origin(Any);
 
     let app = Router::new()
-        .route("/api/compilers", get(api::get_compilers_handler))
-        .route("/api/programs/{compiler}", get(api::get_programs_handler))
-        .route("/api/run", post(api::run_compiler_handler))
+        .route("/api/compilers",            get(api::get_compilers_handler))
+        .route("/api/compiler/:compiler",  get(api::get_compiler_handler))
+        .route("/api/programs/:compiler",  get(api::get_programs_handler))
+        .route("/api/run/:compiler",       post(api::run_compiler_handler))
         .with_state(state)
         .layer(cors);
 
