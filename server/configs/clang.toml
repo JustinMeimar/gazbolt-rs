@@ -1,0 +1,23 @@
+[info]
+name = "clang"
+version = "18.1.18"
+icon = "/path/to/gcc-icon.png"
+
+[[steps]]
+cmd = "clang"
+flags = ["-Wall", "-Werror", "-O2"]
+output_file = "a.out"
+hidden = false
+use_stdin = false
+
+[[steps]]
+cmd = "./a.out"
+flags = []
+output_file = ""
+hidden = false
+use_stdin = true
+
+[temp_files]
+dir = "/tmp/clang-compile"
+prefix = "tmp_"
+cleanup = true
