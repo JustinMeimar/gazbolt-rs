@@ -36,17 +36,20 @@ pub struct TempFilesConfig {
 }
 
 pub fn read_configs(config_dir: PathBuf) -> io::Result<Vec<CompilerConfig>> {
+    
+  // Check path exists.
   if !config_dir.exists() {
     let err_ty = io::ErrorKind::NotFound;
     return Err(io::Error::new(err_ty, "Config dir not found."));
   }
+
+  // Check path is a directory.
   if !config_dir.is_dir() {
     let err_ty = io::ErrorKind::NotADirectory;
     return Err(io::Error::new(err_ty, "Path is not a directory."));
   }
 
-  // For each file in the config directory, attempt to parse the contents as a TOML
-  // file, into a compiler configuration.
+  // Deserailize into a configuration each file found in the config directory.
   let configs: Vec<CompilerConfig> = fs::read_dir(&config_dir)?
     .filter_map(Result::ok)
     .filter_map(
@@ -65,14 +68,16 @@ pub fn read_configs(config_dir: PathBuf) -> io::Result<Vec<CompilerConfig>> {
       },
     )
     .collect();
-
+  
+  // Check we have found at least one config to serve.
   if configs.is_empty() {
     return Err(io::Error::new(
       io::ErrorKind::NotFound,
       "No valid config files found.",
     ));
   }
-
+  
+  // Create compilers object.
   Ok(configs)
 }
 
@@ -103,3 +108,4 @@ mod tests {
     assert_eq!(deserialized.info.name, config.info.name);
   }
 }
+

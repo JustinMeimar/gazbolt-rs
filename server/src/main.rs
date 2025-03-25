@@ -1,5 +1,7 @@
 pub mod api;
 pub mod config;
+pub mod views;
+
 use crate::config::CompilerConfig;
 use api::*;
 use axum::{
@@ -49,7 +51,7 @@ async fn main() {
     .allow_origin(Any);
 
   let app = Router::new()
-    .route("/api/compilers", get(api::get_compilers_handler))
+    .route("/api/compilers", get(api::compiler_list_view))
     .route("/api/compiler/:compiler", get(api::get_compiler_handler))
     .route("/api/programs/:compiler", get(api::get_programs_handler))
     .route("/api/run/:compiler", post(api::run_compiler_handler))
@@ -63,3 +65,4 @@ async fn main() {
     .await
     .unwrap();
 }
+
