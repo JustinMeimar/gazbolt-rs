@@ -1,4 +1,11 @@
-use crate::compiler::Compiler;
+//===----------------------------------------------------------------------===//
+// ~ file: state.rs
+// ~ author: Justin Meimar
+// ~ date: march 25th 2025
+// ~ desc: Frontend state structure and interface for manipulating in a
+//         functionally pure way, like Javascript frameworks are disposed to. 
+//===----------------------------------------------------------------------===//
+
 use std::rc::Rc;
 use web_sys::console;
 use yew::Reducible;
@@ -6,7 +13,7 @@ use yew::Reducible;
 #[derive(PartialEq, Clone)]
 pub struct AppState {
   pub code: String,
-  pub compiler_option: Compiler,
+  pub compiler_option: String,
   pub stdin: String,
   pub stdout: String,
   pub stderr: String,
@@ -14,7 +21,7 @@ pub struct AppState {
 
 pub enum AppAction {
   UpdateCode(String),
-  UpdateCompiler(Compiler),
+  UpdateCompiler(String),
   UpdateStdin(String),
   UpdateStdout(String),
   UpdateStderr(String),
@@ -33,7 +40,7 @@ impl Reducible for AppState {
       AppAction::UpdateStdout(stdout) => next_state.stdout = stdout,
       AppAction::UpdateStderr(stderr) => next_state.stderr = stderr,
     }
-
     next_state.into()
   }
 }
+
