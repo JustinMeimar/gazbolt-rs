@@ -1,5 +1,6 @@
 pub mod compiler;
 pub mod state;
+use core::{ApiExecResponse, ApiExecRequest, ApiCompilerListView};
 use compiler::Compiler;
 use gloo_net::http::{Headers, Request};
 use serde::{Deserialize, Serialize};
@@ -53,18 +54,6 @@ fn Selector(props: &SelectorProps) -> Html {
   }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-pub struct CompilerConfig {
-    name: String,
-    version: String,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct CompilerResponse {
-    configs: Vec<CompilerConfig>,
-    page_no: i32,
-}
-
 #[function_component]
 fn EditorControls() -> Html {
   let compiler_options = use_state(|| Vec::<(String, String)>::new());
@@ -82,7 +71,7 @@ fn EditorControls() -> Html {
           Ok(response) => match response.status() {
             200 => {
               console::log_1(&"GET received 200".into());
-              match response.json::<CompilerResponse>().await {
+              match response.json::<ApiCompilerListView>().await {
                 Ok(api_response) => {
                   let formatted_options: Vec<(String, String)> = api_response
                       .configs
@@ -125,18 +114,6 @@ pub struct TextEditorProps {
   pub value: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-struct ExecRequest {
-    code: String,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-struct ExecResponse {
-    stdout: String,
-    stderr: String,
-    exit_code: u32,
-}
-
 #[function_component]
 fn TextEditor(props: &TextEditorProps) -> Html {
   
@@ -159,7 +136,7 @@ fn TextEditor(props: &TextEditorProps) -> Html {
       let app_state = app_state.clone();
       let code = app_state.code.clone(); 
       spawn_local(async move {        
-        let request_body = ExecRequest { code: code };
+        let request_body = ApiExecRequest { code: code };
          
         match Request::post("http://127.0.0.1:3000/api/run/gcc")
           .header("Content-Type", "application/json")
@@ -171,7 +148,7 @@ fn TextEditor(props: &TextEditorProps) -> Html {
           Ok(response) => match response.status() {
             200 => {
               console::log_1(&"POST received 200".into());
-              match response.json::<ExecResponse>().await {
+              match response.json::<ApiExecResponse>().await {
                 Ok(exec_response) => {
                   app_state.dispatch(AppAction::UpdateStdout(exec_response.stdout));
                   app_state.dispatch(AppAction::UpdateStderr(exec_response.stderr));

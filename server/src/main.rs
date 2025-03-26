@@ -1,6 +1,5 @@
 pub mod api;
 pub mod config;
-pub mod views;
 
 use crate::config::CompilerConfig;
 use api::*;
@@ -26,8 +25,7 @@ struct Args {
   port: String,
 }
 
-//
-pub struct AppState {
+pub struct ServerState {
   configs: Vec<CompilerConfig>,
 }
 
@@ -42,7 +40,7 @@ async fn main() {
     std::process::exit(1);
   }
 
-  let state = Arc::new(AppState {
+  let state = Arc::new(ServerState {
     configs: configs.unwrap(),
   });
 
