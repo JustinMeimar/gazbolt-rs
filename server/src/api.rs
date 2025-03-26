@@ -1,52 +1,12 @@
 use crate::config::{CompilerConfig, CompilerInfo};
 use crate::AppState;
-use crate::views;
+use crate::views::{CompilerView, CompilerListView};
 use axum::extract::{Path, State};
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::Json;
 use serde::{Deserialize, Serialize};
-use core::types::CompilersListResponse;
 use std::sync::Arc;
-
-///=====================================================///
-/// Views
-///=====================================================///
-#[derive(Serialize)]
-pub struct CompilerView {
-  name: String,
-  version: String,
-}
-
-#[derive(Serialize)]
-pub struct CompilerListView {
-  configs: Vec<CompilerView>,
-  page_no: usize,
-}
-
-impl From<&CompilerConfig> for CompilerView {
-  fn from(config: &CompilerConfig) -> Self {
-    Self {
-      name: config.info.name.clone(),
-      version: config.info.version.clone(),
-    }
-  }
-}
-
-impl From<&Vec<CompilerConfig>> for CompilerListView {
-  fn from(configs: &Vec<CompilerConfig>) -> Self {
-    let config_views = configs
-      .iter()
-      .map(|c| CompilerView::from(c))
-      .collect(); 
-
-    // Only support one, big page for now. 
-    Self {
-      configs: config_views,
-      page_no: 1
-    }
-  }
-}
 
 ///=====================================================///
 /// API
@@ -73,7 +33,7 @@ pub async fn get_compiler_handler(State(state): State<Arc<AppState>>,
     },
     None => {
       let error = serde_json::json!({
-          "error": format!("Compiler: '{}' not found.", compiler) // Fixed typo
+          "error": format!("Compiler: '{}' not found.", compiler)
         });  
       (StatusCode::NOT_FOUND, Json(error))
     }
@@ -90,13 +50,24 @@ pub async fn get_programs_handler(State(state): State<Arc<AppState>>,
   ) 
 }
 
+#[derive(Deserialize)]
+pub struct ExecRequest {
+    code: String,
+}
+
 pub async fn run_compiler_handler(State(state): State<Arc<AppState>>,
-                                  Path(compiler): Path<String>)
+                                  Path(compiler): Path<String>,
+                                  Json(request): Json<ExecRequest>)
                               -> (StatusCode, Json<serde_json::Value>)
-{ 
+{
+  println!("Received Code: {}", request.code);
   (
-    StatusCode::NOT_FOUND,
-    Json(serde_json::json!({"error": "not implemented"}))
+    StatusCode::OK,
+    Json(serde_json::json!({
+      "stdout": "Received request successfully",
+      "stderr": "Yep",
+      "exit_code": 3
+    }))
   ) 
 }
 

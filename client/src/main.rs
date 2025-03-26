@@ -1,8 +1,7 @@
 pub mod compiler;
 pub mod state;
 use compiler::Compiler;
-use core::{CompilersResponse, Request as GazboltRequest, Response};
-use gloo_net::http::Request;
+use gloo_net::http::{Headers, Request};
 use serde::{Deserialize, Serialize};
 use state::{AppAction, AppState};
 use std::fmt;
@@ -16,15 +15,19 @@ pub struct TextBoxProps {
   placeholder: AttrValue,
   #[prop_or_default]
   readonly: bool,
+  value: AttrValue,
 }
 
 #[function_component]
 fn TextBox(props: &TextBoxProps) -> Html {
+  let app_state = use_context::<UseReducerHandle<AppState>>()
+    .expect("No State found");
   html! {
     <textarea
       name={props.name.clone()}
       placeholder={props.placeholder.clone()}
       readonly={props.readonly}
+      value={props.value.clone()}
     />
   }
 }
@@ -50,13 +53,24 @@ fn Selector(props: &SelectorProps) -> Html {
   }
 }
 
+#[derive(Serialize, Deserialize, Debug)]
+pub struct CompilerConfig {
+    name: String,
+    version: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct CompilerResponse {
+    configs: Vec<CompilerConfig>,
+    page_no: i32,
+}
+
 #[function_component]
 fn EditorControls() -> Html {
   let compiler_options = use_state(|| Vec::<(String, String)>::new());
 
   let options = compiler_options.clone();
-  use_effect_with(
-    (), // dependencies as first argument
+  use_effect_with((),
     move |_| {
       let options = options.clone();
 
@@ -68,19 +82,14 @@ fn EditorControls() -> Html {
           Ok(response) => match response.status() {
             200 => {
               console::log_1(&"GET received 200".into());
-              match response.json::<Response>().await {
-                Ok(api_response) => match api_response {
-                  Response::Compilers(compilers_response) => {
-                    let formatted_options: Vec<(String, String)> = compilers_response
-                      .compilers
+              match response.json::<CompilerResponse>().await {
+                Ok(api_response) => {
+                  let formatted_options: Vec<(String, String)> = api_response
+                      .configs
                       .into_iter()
                       .map(|c| (c.name.clone(), format!("{} {}", c.name, c.version)))
                       .collect();
-                    options.set(formatted_options);
-                  }
-                  _ => {
-                    console::error_1(&"Unexpected response type".into());
-                  }
+                  options.set(formatted_options);
                 },
                 Err(e) => {
                   console::error_1(&format!("Error parsing response: {:?}", e).into());
@@ -116,14 +125,26 @@ pub struct TextEditorProps {
   pub value: String,
 }
 
+#[derive(Serialize, Deserialize, Debug)]
+struct ExecRequest {
+    code: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+struct ExecResponse {
+    stdout: String,
+    stderr: String,
+    exit_code: u32,
+}
+
 #[function_component]
 fn TextEditor(props: &TextEditorProps) -> Html {
+  
   let app_state = use_context::<UseReducerHandle<AppState>>().expect("No State found");
-  let code = &app_state.code;
 
   let on_code_change = {
-    let app_state = app_state.clone(); // copy to move into closure
-
+    // copy to move into closure
+    let app_state = app_state.clone();
     Callback::from(move |e: Event| {
       let input = e.target_dyn_into::<web_sys::HtmlTextAreaElement>();
       if let Some(input) = input {
@@ -133,23 +154,32 @@ fn TextEditor(props: &TextEditorProps) -> Html {
   };
 
   let on_run = {
-    Callback::from(move |_| {
-      spawn_local(async move {
+    let app_state = app_state.clone(); 
+    Callback::from(move |_e: MouseEvent| {
+      let app_state = app_state.clone();
+      let code = app_state.code.clone(); 
+      spawn_local(async move {        
+        let request_body = ExecRequest { code: code };
+         
         match Request::post("http://127.0.0.1:3000/api/run/gcc")
+          .header("Content-Type", "application/json")
+          .json(&request_body)
+          .expect("Faield to serialize request body")
           .send()
           .await
         {
           Ok(response) => match response.status() {
             200 => {
-              console::log_1(&"GET received 200".into());
-              // match response.json::<serde_json::Value>().await {
-              //   Ok(compilers) => {
-              //     console::log_1(&compilers.to_string().into());
-              //   }
-              //   Err(e) => {
-              //     console::log_1(&"Failed to deserialize!".into());
-              //   }
-              // }
+              console::log_1(&"POST received 200".into());
+              match response.json::<ExecResponse>().await {
+                Ok(exec_response) => {
+                  app_state.dispatch(AppAction::UpdateStdout(exec_response.stdout));
+                  app_state.dispatch(AppAction::UpdateStderr(exec_response.stderr));
+                }
+                Err(e) => {
+                  console::log_1(&format!("Failed to deserialize: {}", e).into());
+                }
+              } 
             }
             404 => {
               console::log_1(&"GET received 404".into());
@@ -173,7 +203,7 @@ fn TextEditor(props: &TextEditorProps) -> Html {
         width={"300"}
         height={"500"}
         rows={"24"}
-        value={code.clone()}
+        value={app_state.code.clone()}
         onchange={on_code_change}
       />
       <button onclick={on_run}>
@@ -208,6 +238,31 @@ fn AppStateProvider(props: &AppProviderProps) -> Html {
 }
 
 #[function_component]
+fn OutputPanes() -> Html {
+   
+  let app_state = use_context::<UseReducerHandle<AppState>>()
+    .expect("No State found");
+  
+  html! { 
+    <div>
+      <TextBox name="stdin"
+               placeholder="Standard Input..."
+               readonly={true}
+               value={app_state.stdin.clone()}/>
+      <TextBox name="stdout"
+               placeholder="Standard Output..."
+               readonly={true}
+               value={app_state.stdout.clone()}/>
+      <TextBox name="stderr"
+               placeholder="Standard Error..."
+               readonly={true}
+               value={app_state.stderr.clone()}/>   
+    </div>
+  }
+
+}
+
+#[function_component]
 fn App() -> Html {
   html! {
     <AppStateProvider>
@@ -219,15 +274,7 @@ fn App() -> Html {
             </div>
           </div>
           <div id="right">
-            <TextBox name="stdin"
-                     placeholder="Standard Input..."
-                     readonly={true} />
-            <TextBox name="stdout"
-                     placeholder="Standard Output..."
-                     readonly={true} />
-            <TextBox name="stderr"
-                     placeholder="Standard Error..."
-                     readonly={true} />
+            <OutputPanes />
           </div>
         </div>
         <footer>

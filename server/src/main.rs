@@ -6,7 +6,7 @@ use crate::config::CompilerConfig;
 use api::*;
 use axum::{
   extract::{Path, State},
-  http::{Method, StatusCode},
+  http::{Method, StatusCode, header},
   routing::{get, post},
   Router,
 };
@@ -48,7 +48,8 @@ async fn main() {
 
   let cors = CorsLayer::new()
     .allow_methods([Method::GET, Method::POST])
-    .allow_origin(Any);
+    .allow_origin(Any)
+    .allow_headers([header::CONTENT_TYPE]);
 
   let app = Router::new()
     .route("/api/compilers", get(api::compiler_list_view))
