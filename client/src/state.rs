@@ -7,7 +7,6 @@
 //===----------------------------------------------------------------------===//
 
 use std::rc::Rc;
-use web_sys::console;
 use yew::Reducible;
 
 #[derive(PartialEq, Clone)]

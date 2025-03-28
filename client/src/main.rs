@@ -7,18 +7,9 @@
 
 pub mod state;
 pub mod components;
-
-use core::{ApiExecResponse, ApiExecRequest, ApiCompilerListView};
-use components::pane::{Pane, OutputPanes};
-use components::editor_controls::EditorControls;
+use components::pane::OutputPanes;
 use components::text_editor::TextEditor;
-
-use gloo_net::http::{Headers, Request};
-use serde::{Deserialize, Serialize};
-use state::{AppAction, AppState};
-use std::fmt;
-use wasm_bindgen_futures::spawn_local;
-use web_sys::console;
+use state::AppState;
 use yew::prelude::*;
 
 #[derive(Properties, Clone, PartialEq)]

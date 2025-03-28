@@ -1,8 +1,8 @@
 use yew::prelude::*;
 use wasm_bindgen_futures::spawn_local;
 use web_sys::console;
-use core::{ApiExecResponse, ApiExecRequest, ApiCompilerListView};
-use gloo_net::http::{Headers, Request};
+use core::ApiCompilerListView;
+use gloo_net::http::Request;
 
 #[function_component]
 pub fn EditorControls() -> Html {

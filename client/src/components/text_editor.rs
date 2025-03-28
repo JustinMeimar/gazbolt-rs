@@ -1,7 +1,5 @@
-use core::{ApiExecResponse, ApiExecRequest, ApiCompilerListView};
-use gloo_net::http::{Headers, Request};
-use serde::{Deserialize, Serialize};
-use std::fmt;
+use core::{ApiExecResponse, ApiExecRequest};
+use gloo_net::http::Request;
 use wasm_bindgen_futures::spawn_local;
 use web_sys::console;
 use yew::prelude::*;
@@ -15,9 +13,10 @@ pub struct TextEditorProps {
 }
 
 #[function_component]
-pub fn TextEditor(props: &TextEditorProps) -> Html {
+pub fn TextEditor(_props: &TextEditorProps) -> Html {
   
-  let app_state = use_context::<UseReducerHandle<AppState>>().expect("No State found");
+  let app_state = use_context::<UseReducerHandle<AppState>>()
+      .expect("No State found");
 
   let on_code_change = {
     // copy to move into closure
@@ -65,7 +64,9 @@ pub fn TextEditor(props: &TextEditorProps) -> Html {
               console::log_1(&format!("GET received: {}", response.status()).into());
             }
           },
-          Err(e) => {}
+          Err(e) => {
+              eprintln!("Error: {:?}", e);
+          }
         }
       });
       console::log_1(&"me".into());

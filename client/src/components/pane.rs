@@ -11,9 +11,7 @@ pub struct PaneProps {
 }
 
 #[function_component]
-pub fn Pane(props: &PaneProps) -> Html {
-  let app_state = use_context::<UseReducerHandle<AppState>>()
-    .expect("No State found");
+pub fn Pane(props: &PaneProps) -> Html { 
   html! {
     <textarea
       name={props.name.clone()}
