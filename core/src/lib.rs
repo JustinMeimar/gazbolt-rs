@@ -1,7 +1,7 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 ///==========================================================================///
-/// This file contains the shared JSON request and response types between the 
+/// This file contains the shared JSON request and response types between the
 /// frontend and the backend. This powerful notion of sharing types between
 /// the frontend and backend is a major reason this project uses Rust.
 ///==========================================================================///
@@ -15,7 +15,7 @@ pub struct ApiExecRequest {
 pub struct ApiExecResponse {
     pub stdout: String,
     pub stderr: String,
-    pub exit_code: u8
+    pub exit_code: u8,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -29,4 +29,3 @@ pub struct ApiCompilerListView {
     pub configs: Vec<ApiCompilerItemView>,
     pub page_no: usize,
 }
-
