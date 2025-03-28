@@ -1,0 +1,13 @@
+[serve]
+path = "/"
+
+[build]
+target = "index.html"
+
+dist = "dist"
+
+# [[hooks]]
+# stage = "build"
+# command = "cp"
+# command_arguments = ["-r", ".", "dist"]
+

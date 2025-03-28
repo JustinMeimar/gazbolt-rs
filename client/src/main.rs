@@ -41,7 +41,10 @@ fn App() -> Html {
     html! {
       <AppStateProvider>
         <div>
-          <div id="main-container">
+          <div id="test">
+          {"Hello"}
+          </div>
+          <div id="main-container" class="main">
             <div id="left">
               <div id="editor" class="container">
                 <TextEditor />
@@ -60,6 +63,6 @@ fn App() -> Html {
 }
 
 fn main() {
-    println!("This is main...");
     yew::Renderer::<App>::new().render();
 }
+
