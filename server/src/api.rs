@@ -1,12 +1,9 @@
-use crate::config::{CompilerConfig, CompilerInfo};
 use crate::ServerState;
 use core::{ApiCompilerItemView, ApiCompilerListView};
-use core::{ApiExecResponse, ApiExecRequest};
+use core::ApiExecRequest;
 use axum::extract::{Path, State};
 use axum::http::StatusCode;
-use axum::response::IntoResponse;
 use axum::Json;
-use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
 ///=====================================================///
@@ -75,8 +72,8 @@ pub async fn get_compiler_handler(
     }
 }
 
-pub async fn get_programs_handler(State(state): State<Arc<ServerState>>,
-                                  Path(compiler): Path<String>)
+pub async fn get_programs_handler(State(_state): State<Arc<ServerState>>,
+                                  Path(_compiler): Path<String>)
                               -> (StatusCode, Json<serde_json::Value>)
 {
     // TODO: Implement.

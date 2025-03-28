@@ -42,9 +42,9 @@ impl CompilerConfig {
         
         println!("DEBUG: running program: {} on compiler: {}", program, self.info.name);
 
-        self.steps
-            .iter()
-            .map(|s| println!("{:?}", s));
+        // self.steps
+        //     .iter()
+        //     .map(|s| println!("{:?}", s));
 
         ApiExecResponse {
             stdout: "This is stdout.".to_string(),

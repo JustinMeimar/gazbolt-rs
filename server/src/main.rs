@@ -1,19 +1,15 @@
 pub mod api;
 pub mod config;
-
 use crate::config::CompilerConfig;
-use api::*;
-use axum::{
-  extract::{Path, State},
-  http::{Method, StatusCode, header},
-  routing::{get, post},
-  Router,
-};
 use clap::Parser;
-use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use std::sync::Arc;
 use tower_http::cors::{Any, CorsLayer};
+use axum::{
+  http::{Method, header},
+  routing::{get, post},
+  Router,
+};
 
 #[derive(Parser)]
 #[command(author, version, about)]
