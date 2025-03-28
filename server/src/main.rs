@@ -10,7 +10,6 @@ use axum::{
   Router,
 };
 use clap::Parser;
-use config::read_configs;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -34,7 +33,7 @@ async fn main() {
   let args = Args::parse();
 
   // read the compiler configs into memory
-  let configs = read_configs(args.config_dir);
+  let configs = CompilerConfig::read_from_directory(args.config_dir);
   if let Err(e) = &configs {
     eprintln!("Gazbolt Server Error: {}", e);
     std::process::exit(1);

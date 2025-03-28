@@ -1,8 +1,8 @@
 use serde::{Deserialize, Serialize};
+use core::ApiExecResponse;
 use std::fs;
 use std::io;
 use std::path::PathBuf;
-// use core::{CompilerConfig, CompilerInfo, Step, TempFilesConfig};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CompilerConfig {
@@ -35,51 +35,72 @@ pub struct TempFilesConfig {
   cleanup: bool,
 }
 
-pub fn read_configs(config_dir: PathBuf) -> io::Result<Vec<CompilerConfig>> {
+impl CompilerConfig {
     
-  // Check path exists.
-  if !config_dir.exists() {
-    let err_ty = io::ErrorKind::NotFound;
-    return Err(io::Error::new(err_ty, "Config dir not found."));
-  }
+    // Execute a program on a configuration.
+    pub fn run(&self, program: String) -> ApiExecResponse {
+        
+        println!("DEBUG: running program: {} on compiler: {}", program, self.info.name);
 
-  // Check path is a directory.
-  if !config_dir.is_dir() {
-    let err_ty = io::ErrorKind::NotADirectory;
-    return Err(io::Error::new(err_ty, "Path is not a directory."));
-  }
+        self.steps
+            .iter()
+            .map(|s| println!("{:?}", s));
 
-  // Deserailize into a configuration each file found in the config directory.
-  let configs: Vec<CompilerConfig> = fs::read_dir(&config_dir)?
-    .filter_map(Result::ok)
-    .filter_map(
-      |entry: fs::DirEntry| match fs::read_to_string(entry.path()) {
-        Ok(content) => match toml::from_str::<CompilerConfig>(&content) {
-          Ok(config) => Some(config),
-          Err(e) => {
-            eprintln!("Error parsing config file {:?}: {}", entry.path(), e);
-            None
-          }
-        },
-        Err(e) => {
-          eprintln!("Error reading file {:?}: {}", entry.path(), e);
-          None
-        }
-      },
-    )
-    .collect();
-  
-  // Check we have found at least one config to serve.
-  if configs.is_empty() {
-    return Err(io::Error::new(
-      io::ErrorKind::NotFound,
-      "No valid config files found.",
-    ));
-  }
-  
-  // Create compilers object.
-  Ok(configs)
+        ApiExecResponse {
+            stdout: "This is stdout.".to_string(),
+            stderr: "This is stderr.".to_string(),
+            exit_code: 255,
+        } 
+    }
+    
+    // Classmethod to create a vector of Self from a directory of TOML configs
+    pub fn read_from_directory(config_dir: PathBuf) -> io::Result<Vec<Self>> {
+        
+      // Check path exists.
+      if !config_dir.exists() {
+        let err_ty = io::ErrorKind::NotFound;
+        return Err(io::Error::new(err_ty, "Config dir not found."));
+      }
+
+      // Check path is a directory.
+      if !config_dir.is_dir() {
+        let err_ty = io::ErrorKind::NotADirectory;
+        return Err(io::Error::new(err_ty, "Path is not a directory."));
+      }
+
+      // Deserailize into a configuration each file found in the config directory.
+      let configs: Vec<Self> = fs::read_dir(&config_dir)?
+        .filter_map(Result::ok)
+        .filter_map(
+          |entry: fs::DirEntry| match fs::read_to_string(entry.path()) {
+            Ok(content) => match toml::from_str::<CompilerConfig>(&content) {
+              Ok(config) => Some(config),
+              Err(e) => {
+                eprintln!("Error parsing config file {:?}: {}", entry.path(), e);
+                None
+              }
+            },
+            Err(e) => {
+              eprintln!("Error reading file {:?}: {}", entry.path(), e);
+              None
+            }
+          },
+        )
+        .collect();
+      
+      // Check we have found at least one config to serve.
+      if configs.is_empty() {
+        return Err(io::Error::new(
+          io::ErrorKind::NotFound,
+          "No valid config files found.",
+        ));
+      }
+      
+      // Create compilers object.
+      Ok(configs)
+    }
 }
+
 
 #[cfg(test)]
 mod tests {

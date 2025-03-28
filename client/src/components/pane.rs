@@ -30,7 +30,7 @@ pub fn OutputPanes() -> Html {
   let app_state = use_context::<UseReducerHandle<AppState>>()
     .expect("No State found");
   
-  html! { 
+  html! {
     <div>
       <Pane name="stdin"
             placeholder="Standard Input..."
@@ -47,3 +47,4 @@ pub fn OutputPanes() -> Html {
     </div>
   }
 }
+

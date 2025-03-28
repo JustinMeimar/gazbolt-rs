@@ -53,13 +53,13 @@ pub async fn get_compiler_handler(
     match compiler_config {
         Some(cc) => {
             // Construct the view to return
-            let value = ApiCompilerItemView {
+            let view = ApiCompilerItemView {
                 name: cc.info.name.clone(),
                 version: cc.info.version.clone(),
             };
             
             // Serialize the JSON view
-            let json_view = serde_json::to_value(value)
+            let json_view = serde_json::to_value(view)
                 .expect("Failed to serialize");
             
             // Return with 200 OK
@@ -91,15 +91,31 @@ pub async fn run_compiler_handler(State(state): State<Arc<ServerState>>,
                                   Json(request): Json<ApiExecRequest>)
                               -> (StatusCode, Json<serde_json::Value>)
 {
-    // TODO: Implement.
-  println!("Received Code: {}", request.code);
-  (
-    StatusCode::OK,
-    Json(serde_json::json!({
-      "stdout": "Received request successfully",
-      "stderr": "Yep",
-      "exit_code": 3
-    }))
-  ) 
+    // Check that the provided compiler exists 
+    let (status, compiler_json) = get_compiler_handler(State(state.clone()),
+                                                       Path(compiler.clone())).await; 
+    // Return with 404 if not
+    if status != StatusCode::OK {
+        return (status, compiler_json);
+    }
+    
+    // Compiler should be in the state
+    let compiler_config = state.configs
+        .iter()
+        .find(|c| c.info.name == compiler)
+        .unwrap();
+
+    // Run the received code on the compiler
+    let exec_response_view = compiler_config.run(request.code);
+    
+    // Serialize view to JSON
+    let json_response = serde_json::to_value(exec_response_view)
+            .expect("Failed to serialize JSON");
+    
+    // Return response
+    (
+        StatusCode::OK,
+        Json(json_response)
+    ) 
 }
 

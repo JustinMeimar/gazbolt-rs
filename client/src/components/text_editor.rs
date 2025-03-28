@@ -36,7 +36,7 @@ pub fn TextEditor(props: &TextEditorProps) -> Html {
       let app_state = app_state.clone();
       let code = app_state.code.clone(); 
       spawn_local(async move {        
-        let request_body = ApiExecRequest { code: code };
+        let request_body = ApiExecRequest { code };
          
         match Request::post("http://127.0.0.1:3000/api/run/gcc")
           .header("Content-Type", "application/json")
