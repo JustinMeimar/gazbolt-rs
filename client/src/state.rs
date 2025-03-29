@@ -12,7 +12,7 @@ use yew::Reducible;
 #[derive(PartialEq, Clone)]
 pub struct AppState {
     pub code: String,
-    pub compiler_option: String,
+    pub selected_compiler: String,
     pub stdin: String,
     pub stdout: String,
     pub stderr: String,
@@ -34,7 +34,7 @@ impl Reducible for AppState {
 
         match action {
             AppAction::UpdateCode(code) => next_state.code = code,
-            AppAction::UpdateCompiler(compiler) => next_state.compiler_option = compiler,
+            AppAction::UpdateCompiler(compiler) => next_state.selected_compiler = compiler,
             AppAction::UpdateStdin(stdin) => next_state.stdin = stdin,
             AppAction::UpdateStdout(stdout) => next_state.stdout = stdout,
             AppAction::UpdateStderr(stderr) => next_state.stderr = stderr,

@@ -1,14 +1,13 @@
-use core::{ApiCompilerListView, ApiExecRequest, ApiExecResponse};
-use crate::state::{AppState, AppAction};
+use core::ApiCompilerListView;
 use gloo_net::http::Request;
 use wasm_bindgen_futures::spawn_local;
 use web_sys::console;
 use yew::prelude::*;
+use crate::config;
 
 #[function_component]
 pub fn CompilerDropdown() -> Html {
     
-    let app_state = use_context::<UseReducerHandle<AppState>>().expect("No State found");
     let compiler_options = use_state(|| Vec::<(String, String)>::new());
     
     let options = compiler_options.clone();
@@ -16,7 +15,7 @@ pub fn CompilerDropdown() -> Html {
         let options = options.clone();
 
         spawn_local(async move {
-            match Request::get("http://127.0.0.1:3000/api/compilers")
+            match Request::get(&config::create_url("/api/compilers"))
                 .send()
                 .await
             {

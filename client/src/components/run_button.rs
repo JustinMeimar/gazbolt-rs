@@ -1,9 +1,10 @@
-use core::{ApiCompilerListView, ApiExecRequest, ApiExecResponse};
+use core::{ApiExecRequest, ApiExecResponse};
 use crate::state::{AppState, AppAction};
 use gloo_net::http::Request;
 use wasm_bindgen_futures::spawn_local;
 use web_sys::console;
 use yew::prelude::*;
+use crate::config;
 
 #[function_component]
 pub fn RunButton() -> Html {
@@ -17,9 +18,9 @@ pub fn RunButton() -> Html {
             let app_state = app_state.clone();
             let code = app_state.code.clone();
             spawn_local(async move {
-                let request_body = ApiExecRequest { code };
-
-                match Request::post("http://127.0.0.1:3000/api/run/gcc")
+                let request_body = ApiExecRequest { code }; 
+                let api_route = format!("api/run/{}", app_state.selected_compiler);
+                match Request::post(&config::create_url(&api_route))
                     .header("Content-Type", "application/json")
                     .json(&request_body)
                     .expect("Faield to serialize request body")
@@ -39,9 +40,7 @@ pub fn RunButton() -> Html {
                                 Err(e) => {
                                     console::log_1(&format!("Failed to deserialize: {}", e).into());
                                 }
-                            }
-                        }
-                        404 => {
+                            } } 404 => {
                             console::log_1(&"GET received 404".into());
                         }
                         _ => {
@@ -55,7 +54,6 @@ pub fn RunButton() -> Html {
             });
         })
     };
-
     html! { 
       <button onclick={on_run}>
         {"Run"}

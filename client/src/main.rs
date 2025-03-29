@@ -7,6 +7,7 @@
 
 pub mod components;
 pub mod state;
+pub mod config;
 use components::pane::OutputPanes;
 use components::text_editor::TextEditor;
 use state::AppState;
@@ -21,7 +22,7 @@ pub struct AppProviderProps {
 fn AppStateProvider(props: &AppProviderProps) -> Html {
     let initial_state = AppState {
         code: String::new(),
-        compiler_option: "None".to_string(), // initialized on start
+        selected_compiler: "None".to_string(), // initialized on start
         stdin: String::new(),
         stdout: String::new(),
         stderr: String::new(),
