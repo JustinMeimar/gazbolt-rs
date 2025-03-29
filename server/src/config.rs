@@ -53,7 +53,7 @@ impl CompilerConfig {
             exit_code: 255,
         }
     }
-
+    
     // Classmethod to create a vector of Self from a directory of TOML configs
     pub fn read_from_directory(config_dir: PathBuf) -> io::Result<Vec<Self>> {
         // Check path exists.

@@ -19,7 +19,8 @@ pub fn RunButton() -> Html {
             let code = app_state.code.clone();
             spawn_local(async move {
                 let request_body = ApiExecRequest { code }; 
-                let api_route = format!("api/run/{}", app_state.selected_compiler);
+                let api_route = format!("api/run/{}/{}", app_state.selected_compiler,
+                                                         app_state.selected_version);
                 match Request::post(&config::create_url(&api_route))
                     .header("Content-Type", "application/json")
                     .json(&request_body)
@@ -36,6 +37,7 @@ pub fn RunButton() -> Html {
                                         .dispatch(AppAction::UpdateStdout(exec_response.stdout));
                                     app_state
                                         .dispatch(AppAction::UpdateStderr(exec_response.stderr));
+                                    console::log_1(&format!("Run copmiler: {}", app_state.selected_compiler).into());
                                 }
                                 Err(e) => {
                                     console::log_1(&format!("Failed to deserialize: {}", e).into());

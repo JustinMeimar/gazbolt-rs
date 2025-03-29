@@ -22,7 +22,8 @@ pub struct AppProviderProps {
 fn AppStateProvider(props: &AppProviderProps) -> Html {
     let initial_state = AppState {
         code: String::new(),
-        selected_compiler: "None".to_string(), // initialized on start
+        selected_compiler: "None".to_string(),
+        selected_version: "None".to_string(),
         stdin: String::new(),
         stdout: String::new(),
         stderr: String::new(),

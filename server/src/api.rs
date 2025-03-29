@@ -36,14 +36,43 @@ pub async fn compiler_list_view(
     (StatusCode::OK, Json(json_view))
 }
 
-pub async fn get_compiler_handler(
+
+pub async fn compiler_versions_view(
     State(state): State<Arc<ServerState>>,
     Path(compiler): Path<String>,
 ) -> (StatusCode, Json<serde_json::Value>) {
-    // Find the queried compiler
-    let compiler_config = state.configs.iter().find(|c| c.info.name == compiler);
+    // Find all versions of the compiler
+    let compiler_versions: Vec<_> = state.configs
+        .iter()
+        .filter(|c| c.info.name == compiler)
+        .map(|cc| ApiCompilerItemView {
+            name: cc.info.name.clone(),
+            version: cc.info.version.clone(),
+        })
+        .collect();
+    
+    if compiler_versions.is_empty() {
+        let error = serde_json::json!({
+            "error": format!("Compiler: '{}' not found.", compiler)
+        });
+        return (StatusCode::NOT_FOUND, Json(error));
+    }
+    
+    // Serialize the JSON view
+    let json_view = serde_json::to_value(compiler_versions).expect("Failed to serialize");
+    // Return with 200 OK
+    (StatusCode::OK, Json(json_view))
+}
 
-    // Match on find result.
+pub async fn compiler_version_view(
+    State(state): State<Arc<ServerState>>,
+    Path((compiler, version)): Path<(String, String)>,
+) -> (StatusCode, Json<serde_json::Value>) {
+    // Find the specific compiler version
+    let compiler_config = state.configs
+        .iter()
+        .find(|c| c.info.name == compiler && c.info.version == version);
+    
     match compiler_config {
         Some(cc) => {
             // Construct the view to return
@@ -51,17 +80,15 @@ pub async fn get_compiler_handler(
                 name: cc.info.name.clone(),
                 version: cc.info.version.clone(),
             };
-
             // Serialize the JSON view
             let json_view = serde_json::to_value(view).expect("Failed to serialize");
-
             // Return with 200 OK
             (StatusCode::OK, Json(json_view))
         }
         None => {
-            // Construct an error. TODO: Define proper error API.
+            // Construct an error
             let error = serde_json::json!({
-                "error": format!("Compiler: '{}' not found.", compiler)
+                "error": format!("Compiler: '{}' version '{}' not found.", compiler, version)
             });
             (StatusCode::NOT_FOUND, Json(error))
         }
@@ -81,12 +108,15 @@ pub async fn get_programs_handler(
 
 pub async fn run_compiler_handler(
     State(state): State<Arc<ServerState>>,
-    Path(compiler): Path<String>,
+    Path((compiler, version)): Path<(String, String)>,
     Json(request): Json<ApiExecRequest>,
 ) -> (StatusCode, Json<serde_json::Value>) {
     // Check that the provided compiler exists
     let (status, compiler_json) =
-        get_compiler_handler(State(state.clone()), Path(compiler.clone())).await;
+        compiler_version_view(
+            State(state.clone()), Path((compiler.clone(), version.clone()))
+        ).await;
+    
     // Return with 404 if not
     if status != StatusCode::OK {
         return (status, compiler_json);

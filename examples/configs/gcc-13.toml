@@ -1,0 +1,24 @@
+[info]
+name = "gcc"
+version = "13.3.0"
+default_programs = "../programs/gcc"
+
+[[steps]]
+cmd = "gcc"
+flags = ["-Wall", "-Werror", "-O2"]
+output_file = "a.out"
+hidden = false
+use_stdin = false
+
+[[steps]]
+cmd = "./a.out"
+flags = []
+output_file = ""
+hidden = false
+use_stdin = true
+
+[temp_files]
+dir = "/tmp/gcc-compile"
+prefix = "gcc_tmp_"
+cleanup = true
+

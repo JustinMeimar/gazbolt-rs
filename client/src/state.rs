@@ -13,6 +13,7 @@ use yew::Reducible;
 pub struct AppState {
     pub code: String,
     pub selected_compiler: String,
+    pub selected_version: String,
     pub stdin: String,
     pub stdout: String,
     pub stderr: String,
@@ -20,6 +21,7 @@ pub struct AppState {
 
 pub enum AppAction {
     UpdateCode(String),
+    UpdateVersion(String),
     UpdateCompiler(String),
     UpdateStdin(String),
     UpdateStdout(String),
@@ -34,6 +36,7 @@ impl Reducible for AppState {
 
         match action {
             AppAction::UpdateCode(code) => next_state.code = code,
+            AppAction::UpdateVersion(version) => next_state.selected_version = version,
             AppAction::UpdateCompiler(compiler) => next_state.selected_compiler = compiler,
             AppAction::UpdateStdin(stdin) => next_state.stdin = stdin,
             AppAction::UpdateStdout(stdout) => next_state.stdout = stdout,
