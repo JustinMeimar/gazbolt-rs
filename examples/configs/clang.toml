@@ -1,10 +1,10 @@
 [info]
-name = "gcc"
-version = "11.3.0"
-icon = "/path/to/gcc-icon.png"
+name = "clang"
+version = "18.1.18"
+default_programs = "../programs/clang"
 
 [[steps]]
-cmd = "gcc"
+cmd = "clang"
 flags = ["-Wall", "-Werror", "-O2"]
 output_file = "a.out"
 hidden = false
@@ -18,6 +18,6 @@ hidden = false
 use_stdin = true
 
 [temp_files]
-dir = "/tmp/gcc-compile"
-prefix = "gcc_tmp_"
+dir = "/tmp/clang-compile"
+prefix = "tmp_"
 cleanup = true

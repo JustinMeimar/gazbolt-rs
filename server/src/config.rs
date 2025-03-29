@@ -16,7 +16,7 @@ pub struct CompilerConfig {
 pub struct CompilerInfo {
     pub name: String,
     pub version: String,
-    pub icon: PathBuf,
+    pub default_programs: PathBuf,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
