@@ -30,7 +30,7 @@ pub fn OutputPanes() -> Html {
       <div>
         <Pane name="stdin"
               placeholder="Standard Input..."
-              readonly={true}
+              readonly={false}
               value={app_state.stdin.clone()}/>
         <Pane name="stdout"
               placeholder="Standard Output..."

@@ -40,11 +40,8 @@ fn AppStateProvider(props: &AppProviderProps) -> Html {
 fn App() -> Html {
     html! {
       <AppStateProvider>
-        <div>
-          <div id="test">
-          {"Hello"}
-          </div>
-          <div id="main-container" class="main">
+        <div> 
+          <div id="main-container">
             <div id="left">
               <div id="editor" class="container">
                 <TextEditor />

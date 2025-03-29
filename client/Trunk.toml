@@ -1,5 +1,5 @@
 [serve]
-path = "/"
+path = "static"
 
 [build]
 target = "index.html"
