@@ -1,6 +1,8 @@
-use crate::components::editor_controls::EditorControls;
 use crate::state::{AppAction, AppState};
 use yew::prelude::*;
+use crate::components::run_button::RunButton;
+use crate::components::program_dropdown::ProgramDropdown;
+use crate::components::editor_controls::CompilerDropdown;
 
 #[derive(Properties, PartialEq)]
 pub struct TextEditorProps {
@@ -22,19 +24,20 @@ pub fn TextEditor(_props: &TextEditorProps) -> Html {
             }
         })
     };
-
+    
     html! {
       <div>
-        { "This is the code editor" }
-        <EditorControls/>
+        <CompilerDropdown/>
+        <ProgramDropdown/>
+        <RunButton/>
         <textarea
           width={"300"}
           height={"500"}
           rows={"24"}
           value={app_state.code.clone()}
           onchange={on_code_change}
-        />
-        
+        /> 
       </div>
     }
 }
+
